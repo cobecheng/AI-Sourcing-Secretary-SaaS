@@ -1,7 +1,9 @@
 .workspace {
   display: grid;
-  grid-template-columns: 280px minmax(420px, 1fr) 320px;
+  grid-template-columns: minmax(232px, 280px) minmax(0, 1fr) minmax(280px, 340px);
   min-height: 100vh;
+  overflow-x: hidden;
+  width: 100%;
 }
 
 .sidebar,
@@ -23,6 +25,7 @@
   display: flex;
   flex-direction: column;
   gap: 24px;
+  min-width: 0;
 }
 
 .kicker {
@@ -39,6 +42,7 @@
   font-size: 24px;
   line-height: 1.15;
   margin: 0;
+  overflow-wrap: anywhere;
 }
 
 .primaryButton,
@@ -68,10 +72,12 @@
 }
 
 .statGrid div,
+.projectRow,
 .supplierCard,
 .termsPanel,
 .approvalCard,
-.message {
+.message,
+.debugPanel {
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 8px;
@@ -84,16 +90,35 @@
 }
 
 .statGrid span,
+.projectRow span,
 .supplierCard span,
 .messageMeta span,
-.termsPanel dt {
+.termsPanel dt,
+.previewList dt,
+.approvalType,
+.debugRow span {
   color: var(--muted);
   font-size: 12px;
 }
 
+.projectList {
+  display: grid;
+  gap: 10px;
+}
+
+.projectRow {
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+}
+
+.projectRowActive {
+  border-color: var(--accent);
+}
+
 .chatPanel {
   display: grid;
-  grid-template-rows: auto 1fr auto;
+  grid-template-rows: auto minmax(0, 1fr) auto;
   min-width: 0;
 }
 
@@ -101,6 +126,7 @@
   align-items: center;
   border-bottom: 1px solid var(--border);
   display: flex;
+  gap: 16px;
   justify-content: space-between;
   padding: 24px;
 }
@@ -110,9 +136,12 @@
   border: 1px solid var(--border);
   border-radius: 999px;
   color: var(--accent-strong);
+  display: inline-flex;
   font-size: 12px;
   font-weight: 700;
-  padding: 6px 10px;
+  line-height: 1;
+  padding: 7px 10px;
+  white-space: nowrap;
 }
 
 .messages {
@@ -124,13 +153,19 @@
 }
 
 .message {
+  box-sizing: border-box;
   max-width: 760px;
   padding: 16px;
+  width: 100%;
 }
 
 .userMessage {
   align-self: flex-end;
   background: #ecfeff;
+}
+
+.infoMessage {
+  border-color: #f3d69b;
 }
 
 .messageMeta {
@@ -146,17 +181,63 @@
   color: var(--muted);
   line-height: 1.5;
   margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.approvalStack {
+  display: grid;
+  gap: 16px;
+  max-width: 760px;
+  width: 100%;
 }
 
 .approvalCard {
   display: grid;
   gap: 16px;
-  max-width: 760px;
   padding: 18px;
 }
 
+.approvalHeader {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+}
+
 .approvalCard h3 {
-  margin: 12px 0 8px;
+  margin: 0 0 8px;
+}
+
+.previewList,
+.termsPanel dl {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+}
+
+.previewList div,
+.termsPanel div {
+  display: grid;
+  gap: 4px;
+}
+
+.previewList dd,
+.termsPanel dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.missingInfo {
+  background: #fffbeb;
+  border: 1px solid #f3d69b;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.missingInfo ul {
+  color: var(--muted);
+  margin: 8px 0 0;
+  padding-left: 18px;
 }
 
 .approvalActions {
@@ -181,10 +262,46 @@
   border-radius: 8px;
   flex: 1;
   min-height: 44px;
+  min-width: 0;
   padding: 0 14px;
 }
 
-.supplierList {
+.milestoneList {
+  display: grid;
+  gap: 12px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.milestoneList li {
+  align-items: center;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 12px 1fr;
+}
+
+.milestoneList li span {
+  border-radius: 999px;
+  display: block;
+  height: 10px;
+  width: 10px;
+}
+
+.complete span {
+  background: var(--success);
+}
+
+.active span {
+  background: var(--warning);
+}
+
+.pending span {
+  background: var(--border);
+}
+
+.supplierList,
+.debugRows {
   display: grid;
   gap: 12px;
 }
@@ -195,43 +312,52 @@
   padding: 14px;
 }
 
-.supplierCard div {
+.supplierCard div:first-child {
   display: flex;
   gap: 8px;
   justify-content: space-between;
 }
 
-.score {
-  color: var(--success);
-  font-weight: 700;
+.supplierScores {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
-.termsPanel {
+.supplierScores span {
+  background: var(--panel-strong);
+  border-radius: 999px;
+  padding: 5px 8px;
+}
+
+.termsPanel,
+.debugPanel {
   padding: 16px;
 }
 
-.termsPanel dl {
+.debugRow {
   display: grid;
-  gap: 12px;
-  margin: 0;
+  gap: 4px;
 }
 
-.termsPanel div {
-  display: flex;
-  justify-content: space-between;
+.srOnly {
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  width: 1px;
 }
 
-.termsPanel dd {
-  margin: 0;
-}
-
-@media (max-width: 1040px) {
+@media (max-width: 1120px) {
   .workspace {
-    grid-template-columns: 220px 1fr;
+    grid-template-columns: 220px minmax(0, 1fr);
   }
 
   .rightPanel {
-    display: none;
+    border-left: 0;
+    border-top: 1px solid var(--border);
+    grid-column: 1 / -1;
   }
 }
 
@@ -246,9 +372,17 @@
   }
 
   .chatHeader,
-  .chatInput {
+  .chatInput,
+  .approvalHeader {
     align-items: stretch;
     flex-direction: column;
   }
-}
 
+  .messages,
+  .chatHeader,
+  .chatInput,
+  .sidebar,
+  .rightPanel {
+    padding: 18px;
+  }
+}
