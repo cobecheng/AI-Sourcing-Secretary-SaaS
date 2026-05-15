@@ -34,3 +34,10 @@ Decision: Use explicit approval request records for user decisions around email 
 
 Reason: Approval state is a workflow object, not just a boolean on an outreach row. It needs payload preview, edits, decision metadata, auditability, and expiration.
 
+## ADR-0005: Use Current Stable Next.js For The Frontend Shell
+
+Status: Accepted
+
+Decision: Use the current stable Next.js and React versions for the frontend scaffold, even though the original product plan named Next.js 15.
+
+Reason: The first frontend implementation exposed a security advisory in the Next.js 15 dependency line. Keeping the scaffold on the current stable Next.js/React release gives us clean install/build/audit checks while preserving the App Router architecture expected by the plan.
