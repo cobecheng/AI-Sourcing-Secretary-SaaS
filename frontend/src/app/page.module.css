@@ -1,0 +1,254 @@
+.workspace {
+  display: grid;
+  grid-template-columns: 280px minmax(420px, 1fr) 320px;
+  min-height: 100vh;
+}
+
+.sidebar,
+.rightPanel {
+  background: var(--panel);
+  border-color: var(--border);
+  padding: 24px;
+}
+
+.sidebar {
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.rightPanel {
+  border-left: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.kicker {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0;
+  margin: 0 0 8px;
+  text-transform: uppercase;
+}
+
+.sidebar h1,
+.chatHeader h2 {
+  font-size: 24px;
+  line-height: 1.15;
+  margin: 0;
+}
+
+.primaryButton,
+.approvalActions button,
+.chatInput button {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  min-height: 40px;
+  padding: 0 14px;
+}
+
+.primaryButton {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  font-weight: 700;
+}
+
+.primaryButton:hover {
+  background: var(--accent-strong);
+}
+
+.statGrid {
+  display: grid;
+  gap: 12px;
+}
+
+.statGrid div,
+.supplierCard,
+.termsPanel,
+.approvalCard,
+.message {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.statGrid div {
+  display: grid;
+  gap: 6px;
+  padding: 14px;
+}
+
+.statGrid span,
+.supplierCard span,
+.messageMeta span,
+.termsPanel dt {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.chatPanel {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  min-width: 0;
+}
+
+.chatHeader {
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  padding: 24px;
+}
+
+.modeBadge {
+  background: var(--panel-strong);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--accent-strong);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 10px;
+}
+
+.messages {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow: auto;
+  padding: 24px;
+}
+
+.message {
+  max-width: 760px;
+  padding: 16px;
+}
+
+.userMessage {
+  align-self: flex-end;
+  background: #ecfeff;
+}
+
+.messageMeta {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.message p,
+.approvalCard p,
+.supplierCard p {
+  color: var(--muted);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.approvalCard {
+  display: grid;
+  gap: 16px;
+  max-width: 760px;
+  padding: 18px;
+}
+
+.approvalCard h3 {
+  margin: 12px 0 8px;
+}
+
+.approvalActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.approvalActions button:not(.primaryButton) {
+  background: var(--panel);
+}
+
+.chatInput {
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: 12px;
+  padding: 18px 24px;
+}
+
+.chatInput input {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  flex: 1;
+  min-height: 44px;
+  padding: 0 14px;
+}
+
+.supplierList {
+  display: grid;
+  gap: 12px;
+}
+
+.supplierCard {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+}
+
+.supplierCard div {
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+}
+
+.score {
+  color: var(--success);
+  font-weight: 700;
+}
+
+.termsPanel {
+  padding: 16px;
+}
+
+.termsPanel dl {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+}
+
+.termsPanel div {
+  display: flex;
+  justify-content: space-between;
+}
+
+.termsPanel dd {
+  margin: 0;
+}
+
+@media (max-width: 1040px) {
+  .workspace {
+    grid-template-columns: 220px 1fr;
+  }
+
+  .rightPanel {
+    display: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    border-bottom: 1px solid var(--border);
+    border-right: 0;
+  }
+
+  .chatHeader,
+  .chatInput {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
+
