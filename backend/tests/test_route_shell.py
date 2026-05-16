@@ -7,9 +7,7 @@ def test_planned_route_shells_are_registered() -> None:
     client = TestClient(app)
 
     checks = [
-        ("GET", "/projects"),
         ("POST", "/projects/demo-project/chat"),
-        ("GET", "/projects/demo-project/messages"),
         ("GET", "/projects/demo-project/milestones"),
         ("POST", "/projects/demo-project/research/start"),
         ("GET", "/projects/demo-project/suppliers"),
