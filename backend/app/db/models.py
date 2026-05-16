@@ -20,6 +20,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.types import JSON
 
 from app.db.base import Base
+from app.db.types import id_type
 
 
 JsonDict = dict[str, Any]
@@ -43,7 +44,7 @@ class TimestampMixin:
 class User(Base):
     __tablename__ = "users"
 
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(id_type, primary_key=True, autoincrement=True)
     email: Mapped[str] = mapped_column(Text, nullable=False, unique=True)
     name: Mapped[str | None] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
@@ -56,7 +57,7 @@ class Project(TimestampMixin, Base):
         Index("ix_projects_status", "status"),
     )
 
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(id_type, primary_key=True, autoincrement=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     name: Mapped[str] = mapped_column(Text, nullable=False)
     description: Mapped[str | None] = mapped_column(Text)
@@ -73,7 +74,7 @@ class Conversation(TimestampMixin, Base):
         Index("ix_conversations_user_id", "user_id"),
     )
 
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(id_type, primary_key=True, autoincrement=True)
     project_id: Mapped[int] = mapped_column(ForeignKey("projects.id", ondelete="CASCADE"), nullable=False)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
 
@@ -85,7 +86,7 @@ class ChatMessage(Base):
         Index("ix_chat_messages_message_type", "message_type"),
     )
 
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(id_type, primary_key=True, autoincrement=True)
     conversation_id: Mapped[int] = mapped_column(ForeignKey("conversations.id", ondelete="CASCADE"), nullable=False)
     sender: Mapped[str] = mapped_column(Text, nullable=False)
     message_type: Mapped[str] = mapped_column(Text, nullable=False)
@@ -101,7 +102,7 @@ class Milestone(Base):
         Index("ix_milestones_status", "status"),
     )
 
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(id_type, primary_key=True, autoincrement=True)
     project_id: Mapped[int] = mapped_column(ForeignKey("projects.id", ondelete="CASCADE"), nullable=False)
     name: Mapped[str] = mapped_column(Text, nullable=False)
     status: Mapped[str] = mapped_column(Text, nullable=False, server_default="pending")
@@ -119,7 +120,7 @@ class ProjectMemory(TimestampMixin, Base):
         Index("ix_project_memory_source_message_id", "source_message_id"),
     )
 
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(id_type, primary_key=True, autoincrement=True)
     project_id: Mapped[int] = mapped_column(ForeignKey("projects.id", ondelete="CASCADE"), nullable=False)
     key: Mapped[str] = mapped_column(Text, nullable=False)
     value: Mapped[JsonDict] = mapped_column(json_type, nullable=False)
@@ -134,7 +135,7 @@ class Supplier(TimestampMixin, Base):
         Index("ix_suppliers_website", "website"),
     )
 
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(id_type, primary_key=True, autoincrement=True)
     project_id: Mapped[int] = mapped_column(ForeignKey("projects.id", ondelete="CASCADE"), nullable=False)
     name: Mapped[str] = mapped_column(Text, nullable=False)
     website: Mapped[str | None] = mapped_column(Text)
@@ -156,7 +157,7 @@ class SupplierSource(Base):
         Index("ix_supplier_sources_url", "url"),
     )
 
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(id_type, primary_key=True, autoincrement=True)
     supplier_id: Mapped[int] = mapped_column(ForeignKey("suppliers.id", ondelete="CASCADE"), nullable=False)
     url: Mapped[str] = mapped_column(Text, nullable=False)
     title: Mapped[str | None] = mapped_column(Text)
@@ -173,7 +174,7 @@ class ContactForm(TimestampMixin, Base):
         Index("ix_contact_forms_status", "status"),
     )
 
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(id_type, primary_key=True, autoincrement=True)
     supplier_id: Mapped[int] = mapped_column(ForeignKey("suppliers.id", ondelete="CASCADE"), nullable=False)
     form_url: Mapped[str] = mapped_column(Text, nullable=False)
     form_type: Mapped[str | None] = mapped_column(Text)
@@ -191,7 +192,7 @@ class FormSubmission(Base):
         Index("ix_form_submissions_contact_form_id", "contact_form_id"),
     )
 
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(id_type, primary_key=True, autoincrement=True)
     supplier_id: Mapped[int] = mapped_column(ForeignKey("suppliers.id", ondelete="CASCADE"), nullable=False)
     contact_form_id: Mapped[int] = mapped_column(ForeignKey("contact_forms.id", ondelete="CASCADE"), nullable=False)
     submitted_payload_json: Mapped[JsonDict] = mapped_column(json_type, nullable=False)
@@ -213,7 +214,7 @@ class OutreachMessage(Base):
         Index("ix_outreach_messages_status", "status"),
     )
 
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(id_type, primary_key=True, autoincrement=True)
     project_id: Mapped[int] = mapped_column(ForeignKey("projects.id", ondelete="CASCADE"), nullable=False)
     supplier_id: Mapped[int] = mapped_column(ForeignKey("suppliers.id", ondelete="CASCADE"), nullable=False)
     channel: Mapped[str] = mapped_column(Text, nullable=False)
@@ -233,7 +234,7 @@ class EmailThread(Base):
         Index("ix_email_threads_supplier_id", "supplier_id"),
     )
 
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(id_type, primary_key=True, autoincrement=True)
     supplier_id: Mapped[int] = mapped_column(ForeignKey("suppliers.id", ondelete="CASCADE"), nullable=False)
     gmail_thread_id: Mapped[str] = mapped_column(Text, nullable=False)
     last_message_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
@@ -248,7 +249,7 @@ class SupplierTerm(Base):
         Index("ix_supplier_terms_extracted_from_message_id", "extracted_from_message_id"),
     )
 
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(id_type, primary_key=True, autoincrement=True)
     supplier_id: Mapped[int] = mapped_column(ForeignKey("suppliers.id", ondelete="CASCADE"), nullable=False)
     moq: Mapped[str | None] = mapped_column(Text)
     price_list_available: Mapped[bool | None] = mapped_column(Boolean)
@@ -268,7 +269,7 @@ class AgentRun(TimestampMixin, Base):
         Index("ix_agent_runs_status", "status"),
     )
 
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(id_type, primary_key=True, autoincrement=True)
     project_id: Mapped[int] = mapped_column(ForeignKey("projects.id", ondelete="CASCADE"), nullable=False)
     agent_type: Mapped[str] = mapped_column(Text, nullable=False)
     task_type: Mapped[str] = mapped_column(Text, nullable=False)
@@ -299,7 +300,7 @@ class ApprovalRequest(TimestampMixin, Base):
         Index("ix_approval_requests_decided_by_user_id", "decided_by_user_id"),
     )
 
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(id_type, primary_key=True, autoincrement=True)
     project_id: Mapped[int] = mapped_column(ForeignKey("projects.id", ondelete="CASCADE"), nullable=False)
     supplier_id: Mapped[int | None] = mapped_column(ForeignKey("suppliers.id", ondelete="SET NULL"))
     request_type: Mapped[str] = mapped_column(Text, nullable=False)
@@ -322,7 +323,7 @@ class WorkflowRun(TimestampMixin, Base):
         Index("ix_workflow_runs_status", "status"),
     )
 
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(id_type, primary_key=True, autoincrement=True)
     project_id: Mapped[int] = mapped_column(ForeignKey("projects.id", ondelete="CASCADE"), nullable=False)
     agent_run_id: Mapped[int | None] = mapped_column(ForeignKey("agent_runs.id", ondelete="SET NULL"))
     workflow_name: Mapped[str] = mapped_column(Text, nullable=False)
@@ -342,7 +343,7 @@ class AuditLog(Base):
         Index("ix_audit_logs_entity", "entity_type", "entity_id"),
     )
 
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(id_type, primary_key=True, autoincrement=True)
     user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"))
     project_id: Mapped[int | None] = mapped_column(ForeignKey("projects.id", ondelete="SET NULL"))
     action: Mapped[str] = mapped_column(Text, nullable=False)
@@ -359,7 +360,7 @@ class LLMBudget(TimestampMixin, Base):
         Index("ix_llm_budgets_project_id", "project_id"),
     )
 
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(id_type, primary_key=True, autoincrement=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     project_id: Mapped[int | None] = mapped_column(ForeignKey("projects.id", ondelete="CASCADE"))
     daily_limit_usd: Mapped[Decimal] = mapped_column(Numeric(12, 6), nullable=False, server_default="2")
@@ -378,7 +379,7 @@ class LLMModelConfig(TimestampMixin, Base):
         Index("ix_llm_model_configs_enabled", "enabled"),
     )
 
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(id_type, primary_key=True, autoincrement=True)
     task_type: Mapped[str] = mapped_column(Text, nullable=False)
     tier: Mapped[int] = mapped_column(BigInteger, nullable=False)
     provider: Mapped[str] = mapped_column(Text, nullable=False)

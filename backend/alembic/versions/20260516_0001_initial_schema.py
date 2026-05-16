@@ -19,7 +19,8 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def pk_column() -> sa.Column:
-    return sa.Column("id", sa.BigInteger(), sa.Identity(always=True), primary_key=True)
+    id_type = sa.BigInteger().with_variant(sa.Integer(), "sqlite")
+    return sa.Column("id", id_type, sa.Identity(always=True), primary_key=True)
 
 
 def timestamps() -> list[sa.Column]:
