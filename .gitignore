@@ -10,11 +10,13 @@ dist/
 coverage/
 
 .venv/
+*.egg-info/
 __pycache__/
 .pytest_cache/
 .ruff_cache/
 *.pyc
 *.tsbuildinfo
+dev.db
 
 postgres-data/
 redis-data/

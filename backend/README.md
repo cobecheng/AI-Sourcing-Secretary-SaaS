@@ -19,6 +19,15 @@ pytest
 uvicorn app.main:app --reload
 ```
 
+## Migrations
+
+```bash
+alembic upgrade head
+alembic downgrade -1
+```
+
+The default migration fallback is `sqlite:///./dev.db` for local smoke testing. Production and Docker Compose should provide `DATABASE_URL` for Postgres.
+
 ## Safety
 
 Placeholder endpoints return `status: not_implemented`. They are route skeletons only. Future issues must keep provider calls behind mock-mode checks, approval records, idempotency keys, and audit logging where relevant.
