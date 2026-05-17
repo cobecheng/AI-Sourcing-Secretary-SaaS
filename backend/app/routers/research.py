@@ -1,30 +1,19 @@
-from typing import Any
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
 
-from fastapi import APIRouter
-
-from app.config import get_settings
-from app.routers._placeholders import placeholder_response
+from app.db.session import get_db
+from app.schemas.research import MockResearchStartResponse, ResearchStatusResponse
+from app.services.mock_research import get_mock_research_status, run_mock_research
 
 
 router = APIRouter(prefix="/projects/{project_id}/research", tags=["research"])
 
 
-@router.post("/start")
-def start_research(project_id: str) -> dict[str, Any]:
-    return placeholder_response(
-        area="research",
-        action="start_research",
-        mock_mode=get_settings().mock_mode,
-        project_id=project_id,
-    )
+@router.post("/start", response_model=MockResearchStartResponse)
+def start_research(project_id: int, db: Session = Depends(get_db)) -> MockResearchStartResponse:
+    return run_mock_research(db, project_id)
 
 
-@router.get("/status")
-def get_research_status(project_id: str) -> dict[str, Any]:
-    return placeholder_response(
-        area="research",
-        action="get_research_status",
-        mock_mode=get_settings().mock_mode,
-        project_id=project_id,
-    )
-
+@router.get("/status", response_model=ResearchStatusResponse)
+def get_research_status(project_id: int, db: Session = Depends(get_db)) -> ResearchStatusResponse:
+    return get_mock_research_status(db, project_id)
