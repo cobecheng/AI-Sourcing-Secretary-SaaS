@@ -96,7 +96,8 @@
 .termsPanel dt,
 .previewList dt,
 .approvalType,
-.debugRow span {
+.debugHeader span,
+.debugMetrics dt {
   color: var(--muted);
   font-size: 12px;
 }
@@ -335,9 +336,43 @@
   padding: 16px;
 }
 
+.debugHeader {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+}
+
+.debugHeader span {
+  background: var(--panel-strong);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-weight: 700;
+  line-height: 1;
+  padding: 5px 8px;
+}
+
 .debugRow {
   display: grid;
-  gap: 4px;
+  gap: 10px;
+}
+
+.debugMetrics {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+}
+
+.debugMetrics div {
+  min-width: 0;
+}
+
+.debugMetrics dd {
+  font-size: 13px;
+  font-weight: 700;
+  margin: 2px 0 0;
+  overflow-wrap: anywhere;
 }
 
 .srOnly {
