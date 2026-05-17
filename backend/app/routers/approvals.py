@@ -1,9 +1,13 @@
 from typing import Any
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
 
 from app.config import get_settings
+from app.db.session import get_db
 from app.routers._placeholders import placeholder_response
+from app.schemas.outbound import ApprovalDecisionRequest, ApprovalDecisionResponse
+from app.services.outbound_actions import approve_approval_request
 
 
 router = APIRouter(tags=["approvals"])
@@ -19,14 +23,17 @@ def list_project_approvals(project_id: str) -> dict[str, Any]:
     )
 
 
-@router.post("/approvals/{approval_id}/approve")
-def approve_request(approval_id: str) -> dict[str, Any]:
-    return placeholder_response(
-        area="approvals",
-        action="approve_request",
-        mock_mode=get_settings().mock_mode,
+@router.post("/approvals/{approval_id}/approve", response_model=ApprovalDecisionResponse)
+def approve_request(
+    approval_id: int,
+    request: ApprovalDecisionRequest | None = None,
+    db: Session = Depends(get_db),
+) -> ApprovalDecisionResponse:
+    return approve_approval_request(
+        db,
         approval_id=approval_id,
-        safety="approval records are required before any future outbound action",
+        user_id=request.user_id if request else None,
+        note=request.note if request else None,
     )
 
 
@@ -48,4 +55,3 @@ def edit_request(approval_id: str) -> dict[str, Any]:
         mock_mode=get_settings().mock_mode,
         approval_id=approval_id,
     )
-

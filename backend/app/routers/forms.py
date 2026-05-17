@@ -1,9 +1,13 @@
 from typing import Any
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
 
 from app.config import get_settings
+from app.db.session import get_db
 from app.routers._placeholders import placeholder_response
+from app.schemas.outbound import ExecuteFormResponse
+from app.services.outbound_actions import execute_approved_form_submission
 
 
 router = APIRouter(tags=["forms"])
@@ -39,15 +43,9 @@ def prepare_form_submission(form_id: str) -> dict[str, Any]:
     )
 
 
-@router.post("/forms/{form_id}/approve-submit")
-def approve_form_submission(form_id: str) -> dict[str, Any]:
-    return placeholder_response(
-        area="forms",
-        action="approve_form_submission",
-        mock_mode=get_settings().mock_mode,
-        form_id=form_id,
-        safety="requires approved approval_request before future implementation submits anything",
-    )
+@router.post("/forms/{form_id}/approve-submit", response_model=ExecuteFormResponse)
+def approve_form_submission(form_id: int, db: Session = Depends(get_db)) -> ExecuteFormResponse:
+    return execute_approved_form_submission(db, form_id)
 
 
 @router.post("/forms/{form_id}/reject")
@@ -58,4 +56,3 @@ def reject_form_submission(form_id: str) -> dict[str, Any]:
         mock_mode=get_settings().mock_mode,
         form_id=form_id,
     )
-

@@ -27,7 +27,7 @@ def test_planned_route_shells_are_registered() -> None:
 def test_outbound_placeholders_include_safety_metadata() -> None:
     client = TestClient(app)
 
-    response = client.post("/outreach/demo-outreach/approve-send")
+    response = client.post("/inbox/sync")
 
     assert response.status_code == 200
-    assert "approval_request" in response.json()["metadata"]["safety"]
+    assert "idempotent" in response.json()["metadata"]["safety"]
