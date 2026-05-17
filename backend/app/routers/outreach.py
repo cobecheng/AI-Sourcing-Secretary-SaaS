@@ -7,30 +7,26 @@ from app.config import get_settings
 from app.db.session import get_db
 from app.routers._placeholders import placeholder_response
 from app.schemas.outbound import ExecuteEmailResponse
+from app.schemas.outreach import DraftOutreachRequest, OutreachDraftResponse, PendingOutreachResponse
+from app.services.outreach_drafting import draft_supplier_email, list_pending_outreach as list_pending_outreach_service
 from app.services.outbound_actions import execute_approved_email
 
 
 router = APIRouter(tags=["outreach"])
 
 
-@router.post("/suppliers/{supplier_id}/outreach/draft")
-def draft_supplier_outreach(supplier_id: str) -> dict[str, Any]:
-    return placeholder_response(
-        area="outreach",
-        action="draft_supplier_outreach",
-        mock_mode=get_settings().mock_mode,
-        supplier_id=supplier_id,
-    )
+@router.post("/suppliers/{supplier_id}/outreach/draft", response_model=OutreachDraftResponse)
+def draft_supplier_outreach(
+    supplier_id: int,
+    request: DraftOutreachRequest | None = None,
+    db: Session = Depends(get_db),
+) -> OutreachDraftResponse:
+    return draft_supplier_email(db, supplier_id, request)
 
 
-@router.get("/projects/{project_id}/outreach/pending")
-def list_pending_outreach(project_id: str) -> dict[str, Any]:
-    return placeholder_response(
-        area="outreach",
-        action="list_pending_outreach",
-        mock_mode=get_settings().mock_mode,
-        project_id=project_id,
-    )
+@router.get("/projects/{project_id}/outreach/pending", response_model=PendingOutreachResponse)
+def list_pending_outreach(project_id: int, db: Session = Depends(get_db)) -> PendingOutreachResponse:
+    return list_pending_outreach_service(db, project_id)
 
 
 @router.post("/outreach/{outreach_id}/approve-send", response_model=ExecuteEmailResponse)
