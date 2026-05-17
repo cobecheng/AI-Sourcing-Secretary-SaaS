@@ -12,6 +12,12 @@ class Settings(BaseSettings):
     cors_origins: list[str] = ["http://localhost:3000"]
     exa_api_key: str = ""
     firecrawl_api_key: str = ""
+    enable_real_scraping: bool = False
+    scraping_provider: str = "firecrawl"
+    scraping_rate_limit_per_minute: int = 10
+    scraping_request_timeout_seconds: int = 20
+    scraping_user_agent: str = "AI-Sourcing-Secretary/0.1 (+mock-safe development crawler)"
+    max_suppliers_to_scrape: int = 10
     litellm_proxy_url: str = ""
     litellm_master_key: str = ""
     max_project_llm_cost_usd: float = 5
