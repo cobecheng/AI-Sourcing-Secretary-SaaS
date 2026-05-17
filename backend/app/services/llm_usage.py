@@ -14,6 +14,7 @@ from app.schemas.llm import (
     LLMCompleteResponse,
     LLMUsageResponse,
 )
+from app.services.llm_router import route_llm_call
 
 
 BUDGET_WARNING_RATIO = Decimal("0.80")
@@ -28,6 +29,7 @@ EXPENSIVE_TASKS = {
 
 def complete_with_mock_llm(db: Session, request: LLMCompleteRequest) -> LLMCompleteResponse:
     project = _get_project(db, request.project_id)
+    routed_call = route_llm_call(request)
     budget = _get_or_create_project_budget(db, project)
     call_cost = Decimal(str(request.actual_cost_usd if request.actual_cost_usd is not None else request.estimated_cost_usd))
     was_already_warning = _is_budget_warning(budget)
@@ -50,6 +52,7 @@ def complete_with_mock_llm(db: Session, request: LLMCompleteRequest) -> LLMCompl
             budget=_budget_response(budget),
             status="paused_for_budget",
             message="Expensive task paused because the project budget would be exceeded.",
+            routing=_routing_payload(routed_call),
             chat_warning_created=warning_created,
             requires_user_approval=True,
         )
@@ -58,18 +61,26 @@ def complete_with_mock_llm(db: Session, request: LLMCompleteRequest) -> LLMCompl
         project_id=project.id,
         agent_type="llm_router",
         task_type=request.task_type,
-        status="complete",
-        input_json={"prompt": request.prompt, "mock_mode": get_settings().mock_mode},
-        output_json={"text": "Mock LLM response", "budget_checked": True},
-        provider=request.provider,
-        model=request.model,
+        status="needs_user_approval" if routed_call.requires_user_approval else "complete",
+        input_json={
+            "prompt": request.prompt,
+            "input": request.input_json,
+            "required_output_fields": request.required_output_fields,
+            "mock_mode": get_settings().mock_mode,
+            "routing": _routing_payload(routed_call),
+        },
+        output_json={**routed_call.output_json, "budget_checked": True},
+        provider=routed_call.provider,
+        model=routed_call.model,
         input_tokens=request.input_tokens,
         output_tokens=request.output_tokens,
         estimated_cost_usd=Decimal(str(request.estimated_cost_usd)),
         actual_cost_usd=call_cost,
         latency_ms=request.latency_ms,
-        confidence=Decimal(str(request.confidence)),
-        fallback_used=request.fallback_used,
+        prompt_version=routed_call.prompt_version,
+        schema_version=routed_call.schema_version,
+        confidence=Decimal(str(routed_call.confidence)),
+        fallback_used=routed_call.fallback_used,
     )
     db.add(agent_run)
     _apply_budget_spend(budget, call_cost)
@@ -94,9 +105,10 @@ def complete_with_mock_llm(db: Session, request: LLMCompleteRequest) -> LLMCompl
         agent_run=_agent_run_response(agent_run),
         budget=_budget_response(budget),
         status=_budget_status(budget),
-        message="Mock LLM call logged with budget usage.",
+        message="Mock LLM call routed and logged with budget usage.",
+        routing=_routing_payload(routed_call),
         chat_warning_created=warning_created,
-        requires_user_approval=False,
+        requires_user_approval=routed_call.requires_user_approval,
     )
 
 
@@ -249,6 +261,8 @@ def _agent_run_response(run: AgentRun) -> AgentRunUsageResponse:
         estimated_cost_usd=float(run.estimated_cost_usd) if run.estimated_cost_usd is not None else None,
         actual_cost_usd=float(run.actual_cost_usd) if run.actual_cost_usd is not None else None,
         latency_ms=run.latency_ms,
+        prompt_version=run.prompt_version,
+        schema_version=run.schema_version,
         confidence=float(run.confidence) if run.confidence is not None else None,
         fallback_used=run.fallback_used,
     )
@@ -271,3 +285,18 @@ def _budget_response(budget: LLMBudget) -> LLMBudgetResponse:
         project_budget_ratio=spend / limit if limit else 0,
         status=_budget_status(budget),
     )
+
+
+def _routing_payload(routed_call) -> dict:
+    return {
+        "provider": routed_call.provider,
+        "model": routed_call.model,
+        "tier": routed_call.tier,
+        "confidence": routed_call.confidence,
+        "prompt_version": routed_call.prompt_version,
+        "schema_version": routed_call.schema_version,
+        "fallback_used": routed_call.fallback_used,
+        "requires_user_approval": routed_call.requires_user_approval,
+        "decision": routed_call.decision,
+        "reason": routed_call.reason,
+    }

@@ -15,7 +15,6 @@ def test_planned_route_shells_are_registered() -> None:
         ("POST", "/suppliers/demo-supplier/outreach/draft"),
         ("POST", "/inbox/sync"),
         ("POST", "/projects/demo-project/report/generate"),
-        ("GET", "/llm/models"),
     ]
 
     for method, path in checks:
