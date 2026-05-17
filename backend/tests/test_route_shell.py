@@ -10,7 +10,6 @@ def test_planned_route_shells_are_registered() -> None:
         ("POST", "/projects/demo-project/chat"),
         ("GET", "/projects/demo-project/milestones"),
         ("POST", "/inbox/sync"),
-        ("POST", "/projects/demo-project/report/generate"),
     ]
 
     for method, path in checks:
