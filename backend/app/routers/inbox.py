@@ -1,9 +1,13 @@
 from typing import Any
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
 
 from app.config import get_settings
+from app.db.session import get_db
 from app.routers._placeholders import placeholder_response
+from app.schemas.inbox import DraftFollowupRequest, FollowupDraftResponse
+from app.services.followup_drafting import draft_followup_reply
 
 
 router = APIRouter(tags=["inbox"])
@@ -39,13 +43,10 @@ def extract_reply_terms(reply_id: str) -> dict[str, Any]:
     )
 
 
-@router.post("/replies/{reply_id}/draft-followup")
-def draft_reply_followup(reply_id: str) -> dict[str, Any]:
-    return placeholder_response(
-        area="inbox",
-        action="draft_reply_followup",
-        mock_mode=get_settings().mock_mode,
-        reply_id=reply_id,
-        safety="future follow-up sends require user approval",
-    )
-
+@router.post("/replies/{reply_id}/draft-followup", response_model=FollowupDraftResponse)
+def draft_reply_followup(
+    reply_id: int,
+    request: DraftFollowupRequest | None = None,
+    db: Session = Depends(get_db),
+) -> FollowupDraftResponse:
+    return draft_followup_reply(db, reply_id, request)
