@@ -6,6 +6,10 @@ class ApprovalDecisionRequest(BaseModel):
     note: str | None = None
 
 
+class ApprovalEditRequest(ApprovalDecisionRequest):
+    payload_json: dict = Field(default_factory=dict)
+
+
 class ApprovalDecisionResponse(BaseModel):
     id: int
     project_id: int
@@ -13,7 +17,29 @@ class ApprovalDecisionResponse(BaseModel):
     request_type: str
     status: str
     title: str
+    payload_json: dict
     decision_json: dict | None
+
+
+class ApprovalRequestSummary(BaseModel):
+    id: int
+    project_id: int
+    supplier_id: int | None
+    request_type: str
+    status: str
+    title: str
+    payload_json: dict
+    decision_json: dict | None
+    decided_by_user_id: int | None
+    decided_at: str | None
+    expires_at: str | None
+
+
+class ProjectApprovalsResponse(BaseModel):
+    project_id: int
+    mock_mode: bool
+    status_counts: dict[str, int]
+    items: list[ApprovalRequestSummary]
 
 
 class ExecuteOutboundResponse(BaseModel):

@@ -15,9 +15,12 @@ from app.db.models import (
     Supplier,
 )
 from app.schemas.outbound import (
+    ApprovalEditRequest,
     ApprovalDecisionResponse,
+    ApprovalRequestSummary,
     ExecuteEmailResponse,
     ExecuteFormResponse,
+    ProjectApprovalsResponse,
 )
 
 
@@ -33,6 +36,25 @@ BLOCKED_FORM_TERMS = {
     "legal commitment",
 }
 
+APPROVABLE_STATUSES = {"pending", "edited"}
+FINAL_STATUSES = {"rejected", "expired", "cancelled"}
+
+
+def list_project_approval_requests(db: Session, project_id: int) -> ProjectApprovalsResponse:
+    approvals = db.scalars(
+        select(ApprovalRequest).where(ApprovalRequest.project_id == project_id).order_by(ApprovalRequest.id)
+    ).all()
+    status_counts: dict[str, int] = {}
+    for approval in approvals:
+        status_counts[approval.status] = status_counts.get(approval.status, 0) + 1
+
+    return ProjectApprovalsResponse(
+        project_id=project_id,
+        mock_mode=get_settings().mock_mode,
+        status_counts=status_counts,
+        items=[_approval_summary(approval) for approval in approvals],
+    )
+
 
 def approve_approval_request(
     db: Session,
@@ -41,8 +63,12 @@ def approve_approval_request(
     note: str | None = None,
 ) -> ApprovalDecisionResponse:
     approval = _get_approval(db, approval_id)
-    if approval.status == "rejected":
-        raise HTTPException(status_code=409, detail="Rejected approval requests cannot be approved")
+    if approval.status == "approved":
+        return _approval_response(approval)
+    if approval.status in FINAL_STATUSES:
+        raise HTTPException(status_code=409, detail=f"{approval.status.title()} approval requests cannot be approved")
+    if approval.status not in APPROVABLE_STATUSES:
+        raise HTTPException(status_code=409, detail=f"{approval.status.title()} approval requests cannot be approved")
 
     approval.status = "approved"
     approval.decision_json = {
@@ -64,6 +90,70 @@ def approve_approval_request(
     db.commit()
     db.refresh(approval)
     return _approval_response(approval)
+
+
+def reject_approval_request(
+    db: Session,
+    approval_id: int,
+    user_id: int | None = None,
+    note: str | None = None,
+) -> ApprovalDecisionResponse:
+    approval = _get_approval(db, approval_id)
+    return _set_approval_decision(db, approval, "rejected", user_id, note)
+
+
+def edit_approval_request(
+    db: Session,
+    approval_id: int,
+    request: ApprovalEditRequest,
+) -> ApprovalDecisionResponse:
+    approval = _get_approval(db, approval_id)
+    if approval.status in FINAL_STATUSES:
+        raise HTTPException(status_code=409, detail=f"{approval.status.title()} approval requests cannot be edited")
+    if not request.payload_json:
+        raise HTTPException(status_code=422, detail="Edited approval payload cannot be empty")
+
+    approval.payload_json = request.payload_json
+    approval.status = "edited"
+    approval.decision_json = {
+        "decision": "edited",
+        "note": request.note,
+        "mock_mode": get_settings().mock_mode,
+    }
+    approval.decided_by_user_id = request.user_id
+    approval.decided_at = datetime.now(UTC)
+    _audit(
+        db,
+        project_id=approval.project_id,
+        user_id=request.user_id,
+        action="approval.edited",
+        entity_type="approval_request",
+        entity_id=approval.id,
+        metadata={"request_type": approval.request_type, "payload_json": approval.payload_json},
+    )
+    db.commit()
+    db.refresh(approval)
+    return _approval_response(approval)
+
+
+def expire_approval_request(
+    db: Session,
+    approval_id: int,
+    user_id: int | None = None,
+    note: str | None = None,
+) -> ApprovalDecisionResponse:
+    approval = _get_approval(db, approval_id)
+    return _set_approval_decision(db, approval, "expired", user_id, note)
+
+
+def cancel_approval_request(
+    db: Session,
+    approval_id: int,
+    user_id: int | None = None,
+    note: str | None = None,
+) -> ApprovalDecisionResponse:
+    approval = _get_approval(db, approval_id)
+    return _set_approval_decision(db, approval, "cancelled", user_id, note)
 
 
 def execute_approved_email(db: Session, outreach_id: int) -> ExecuteEmailResponse:
@@ -196,6 +286,40 @@ def _get_approval(db: Session, approval_id: int) -> ApprovalRequest:
     return approval
 
 
+def _set_approval_decision(
+    db: Session,
+    approval: ApprovalRequest,
+    status: str,
+    user_id: int | None,
+    note: str | None,
+) -> ApprovalDecisionResponse:
+    if approval.status == status:
+        return _approval_response(approval)
+    if approval.status == "approved" and status in FINAL_STATUSES:
+        raise HTTPException(status_code=409, detail="Approved approval requests cannot be changed after approval")
+
+    approval.status = status
+    approval.decision_json = {
+        "decision": status,
+        "note": note,
+        "mock_mode": get_settings().mock_mode,
+    }
+    approval.decided_by_user_id = user_id
+    approval.decided_at = datetime.now(UTC)
+    _audit(
+        db,
+        project_id=approval.project_id,
+        user_id=user_id,
+        action=f"approval.{status}",
+        entity_type="approval_request",
+        entity_id=approval.id,
+        metadata={"request_type": approval.request_type},
+    )
+    db.commit()
+    db.refresh(approval)
+    return _approval_response(approval)
+
+
 def _get_approved_approval(
     db: Session,
     project_id: int,
@@ -279,7 +403,24 @@ def _approval_response(approval: ApprovalRequest) -> ApprovalDecisionResponse:
         request_type=approval.request_type,
         status=approval.status,
         title=approval.title,
+        payload_json=approval.payload_json,
         decision_json=approval.decision_json,
+    )
+
+
+def _approval_summary(approval: ApprovalRequest) -> ApprovalRequestSummary:
+    return ApprovalRequestSummary(
+        id=approval.id,
+        project_id=approval.project_id,
+        supplier_id=approval.supplier_id,
+        request_type=approval.request_type,
+        status=approval.status,
+        title=approval.title,
+        payload_json=approval.payload_json,
+        decision_json=approval.decision_json,
+        decided_by_user_id=approval.decided_by_user_id,
+        decided_at=approval.decided_at.isoformat() if approval.decided_at else None,
+        expires_at=approval.expires_at.isoformat() if approval.expires_at else None,
     )
 
 
