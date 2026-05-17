@@ -165,7 +165,7 @@ def execute_approved_email(db: Session, outreach_id: int) -> ExecuteEmailRespons
         db,
         project_id=outreach.project_id,
         supplier_id=outreach.supplier_id,
-        request_types=("send_email", "email_send"),
+        request_types=("send_email", "email_send", "send_followup_email"),
     )
     idempotency_key = outreach.idempotency_key or f"email-send:{outreach.project_id}:{outreach.id}"
 
