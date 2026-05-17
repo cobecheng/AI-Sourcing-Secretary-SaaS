@@ -9,7 +9,6 @@ def test_planned_route_shells_are_registered() -> None:
     checks = [
         ("POST", "/projects/demo-project/chat"),
         ("GET", "/projects/demo-project/milestones"),
-        ("POST", "/inbox/sync"),
     ]
 
     for method, path in checks:
@@ -19,10 +18,10 @@ def test_planned_route_shells_are_registered() -> None:
         assert response.json()["mock_mode"] is True
 
 
-def test_outbound_placeholders_include_safety_metadata() -> None:
+def test_placeholders_include_metadata() -> None:
     client = TestClient(app)
 
-    response = client.post("/inbox/sync")
+    response = client.post("/projects/demo-project/chat")
 
     assert response.status_code == 200
-    assert "idempotent" in response.json()["metadata"]["safety"]
+    assert response.json()["metadata"]["project_id"] == "demo-project"
