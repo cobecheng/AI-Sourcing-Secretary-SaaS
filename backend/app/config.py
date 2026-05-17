@@ -11,6 +11,10 @@ class Settings(BaseSettings):
     redis_url: str = ""
     cors_origins: list[str] = ["http://localhost:3000"]
     exa_api_key: str = ""
+    enable_real_search: bool = False
+    search_provider: str = "exa"
+    search_request_timeout_seconds: int = 20
+    max_search_results: int = 10
     firecrawl_api_key: str = ""
     enable_real_scraping: bool = False
     scraping_provider: str = "firecrawl"
