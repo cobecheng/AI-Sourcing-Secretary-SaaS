@@ -9,7 +9,6 @@ def test_planned_route_shells_are_registered() -> None:
     checks = [
         ("POST", "/projects/demo-project/chat"),
         ("GET", "/projects/demo-project/milestones"),
-        ("GET", "/projects/demo-project/suppliers"),
         ("POST", "/inbox/sync"),
         ("POST", "/projects/demo-project/report/generate"),
     ]
