@@ -11,10 +11,14 @@ import type {
 } from "./types";
 
 type ChatWorkspaceProps = {
+  showModelUsageDebug?: boolean;
   workspace: WorkspaceData;
 };
 
-export function ChatWorkspace({ workspace }: ChatWorkspaceProps) {
+export function ChatWorkspace({
+  showModelUsageDebug = false,
+  workspace,
+}: ChatWorkspaceProps) {
   return (
     <main className={styles.workspace}>
       <ProjectSidebar
@@ -61,6 +65,7 @@ export function ChatWorkspace({ workspace }: ChatWorkspaceProps) {
         suppliers={workspace.suppliers}
         terms={workspace.terms}
         modelUsage={workspace.modelUsage}
+        showModelUsageDebug={showModelUsageDebug}
       />
     </main>
   );
@@ -200,11 +205,13 @@ function SupplierSidePanel({
   suppliers,
   terms,
   modelUsage,
+  showModelUsageDebug,
 }: {
   milestones: Milestone[];
   suppliers: Supplier[];
   terms: SupplierTerm[];
   modelUsage: ModelUsage[];
+  showModelUsageDebug: boolean;
 }) {
   return (
     <aside className={styles.rightPanel} aria-label="Supplier status">
@@ -230,7 +237,7 @@ function SupplierSidePanel({
       </section>
 
       <TermsPanel terms={terms} />
-      <ModelUsageDebugPanel usage={modelUsage} />
+      {showModelUsageDebug ? <ModelUsageDebugPanel usage={modelUsage} /> : null}
     </aside>
   );
 }
@@ -268,30 +275,45 @@ function TermsPanel({ terms }: { terms: SupplierTerm[] }) {
 }
 
 function ModelUsageDebugPanel({ usage }: { usage: ModelUsage[] }) {
-  const showDebugPanel = process.env.NODE_ENV !== "production";
-
-  if (!showDebugPanel) {
-    return null;
-  }
-
   return (
     <section className={styles.debugPanel} aria-label="Model usage debug">
-      <p className={styles.kicker}>Model usage</p>
+      <div className={styles.debugHeader}>
+        <p className={styles.kicker}>Model usage debug</p>
+        <span>Admin</span>
+      </div>
       <div className={styles.debugRows}>
         {usage.map((item) => (
           <article className={styles.debugRow} key={item.taskType}>
             <strong>{item.taskType}</strong>
-            <span>
-              {item.provider} / {item.model}
-            </span>
-            <span>
-              {item.cost} · {item.latency} · confidence {item.confidence}
-            </span>
-            <span>Fallback {item.fallbackUsed ? "yes" : "no"}</span>
+            <dl className={styles.debugMetrics}>
+              <div>
+                <dt>Provider</dt>
+                <dd>{item.provider}</dd>
+              </div>
+              <div>
+                <dt>Model</dt>
+                <dd>{item.model}</dd>
+              </div>
+              <div>
+                <dt>Cost</dt>
+                <dd>{item.cost}</dd>
+              </div>
+              <div>
+                <dt>Latency</dt>
+                <dd>{item.latency}</dd>
+              </div>
+              <div>
+                <dt>Confidence</dt>
+                <dd>{item.confidence}</dd>
+              </div>
+              <div>
+                <dt>Fallback</dt>
+                <dd>{item.fallbackUsed ? "yes" : "no"}</dd>
+              </div>
+            </dl>
           </article>
         ))}
       </div>
     </section>
   );
 }
-
