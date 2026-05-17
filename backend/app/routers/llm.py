@@ -6,7 +6,14 @@ from sqlalchemy.orm import Session
 from app.config import get_settings
 from app.db.session import get_db
 from app.routers._placeholders import placeholder_response
-from app.schemas.llm import LLMCompleteRequest, LLMCompleteResponse, LLMBudgetResponse, LLMUsageResponse
+from app.schemas.llm import (
+    LLMCompleteRequest,
+    LLMCompleteResponse,
+    LLMBudgetResponse,
+    LLMModelConfigResponse,
+    LLMUsageResponse,
+)
+from app.services.llm_router import default_model_configs
 from app.services.llm_usage import complete_with_mock_llm, get_project_budget, get_project_usage, get_user_usage
 
 
@@ -31,13 +38,9 @@ def get_user_llm_usage(user_id: int, db: Session = Depends(get_db)) -> LLMUsageR
     return get_user_usage(db, user_id)
 
 
-@router.get("/models")
-def list_llm_models() -> dict[str, Any]:
-    return placeholder_response(
-        area="llm-router",
-        action="list_llm_models",
-        mock_mode=get_settings().mock_mode,
-    )
+@router.get("/models", response_model=list[LLMModelConfigResponse])
+def list_llm_models() -> list[LLMModelConfigResponse]:
+    return default_model_configs()
 
 
 @router.patch("/models/{model_config_id}")
