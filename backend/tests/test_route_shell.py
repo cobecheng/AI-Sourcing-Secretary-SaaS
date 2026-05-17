@@ -10,7 +10,6 @@ def test_planned_route_shells_are_registered() -> None:
         ("POST", "/projects/demo-project/chat"),
         ("GET", "/projects/demo-project/milestones"),
         ("GET", "/projects/demo-project/suppliers"),
-        ("POST", "/suppliers/demo-supplier/forms/inspect"),
         ("GET", "/projects/demo-project/approvals"),
         ("POST", "/suppliers/demo-supplier/outreach/draft"),
         ("POST", "/inbox/sync"),

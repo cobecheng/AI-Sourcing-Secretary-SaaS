@@ -6,31 +6,32 @@ from sqlalchemy.orm import Session
 from app.config import get_settings
 from app.db.session import get_db
 from app.routers._placeholders import placeholder_response
+from app.schemas.forms import ContactFormResponse, InspectSupplierFormsRequest, InspectSupplierFormsResponse
 from app.schemas.outbound import ExecuteFormResponse
+from app.services.form_inspection import inspect_supplier_forms, list_contact_forms
 from app.services.outbound_actions import execute_approved_form_submission
 
 
 router = APIRouter(tags=["forms"])
 
 
-@router.post("/suppliers/{supplier_id}/forms/inspect")
-def inspect_supplier_forms(supplier_id: str) -> dict[str, Any]:
-    return placeholder_response(
-        area="forms",
-        action="inspect_supplier_forms",
-        mock_mode=get_settings().mock_mode,
+@router.post("/suppliers/{supplier_id}/forms/inspect", response_model=InspectSupplierFormsResponse)
+def inspect_supplier_forms_endpoint(
+    supplier_id: int,
+    request: InspectSupplierFormsRequest | None = None,
+    db: Session = Depends(get_db),
+) -> InspectSupplierFormsResponse:
+    return inspect_supplier_forms(
+        db,
         supplier_id=supplier_id,
+        form_url=request.form_url if request else None,
+        page_text=request.page_text if request else None,
     )
 
 
-@router.get("/suppliers/{supplier_id}/forms")
-def list_supplier_forms(supplier_id: str) -> dict[str, Any]:
-    return placeholder_response(
-        area="forms",
-        action="list_supplier_forms",
-        mock_mode=get_settings().mock_mode,
-        supplier_id=supplier_id,
-    )
+@router.get("/suppliers/{supplier_id}/forms", response_model=list[ContactFormResponse])
+def list_supplier_forms_endpoint(supplier_id: int, db: Session = Depends(get_db)) -> list[ContactFormResponse]:
+    return list_contact_forms(db, supplier_id)
 
 
 @router.post("/forms/{form_id}/prepare-submission")
