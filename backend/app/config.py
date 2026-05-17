@@ -1,5 +1,6 @@
 from functools import lru_cache
 
+from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -29,6 +30,12 @@ class Settings(BaseSettings):
     max_premium_calls_per_project: int = 5
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+
+    @model_validator(mode="after")
+    def validate_production_settings(self) -> "Settings":
+        if self.app_env == "production" and "*" in self.cors_origins:
+            raise ValueError("Production CORS origins must be explicit; wildcard origins are not allowed")
+        return self
 
 
 @lru_cache

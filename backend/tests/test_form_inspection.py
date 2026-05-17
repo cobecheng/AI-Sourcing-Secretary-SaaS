@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
 from app.db.base import Base
-from app.db.models import ChatMessage, ContactForm, FormSubmission, ProjectMemory, Supplier
+from app.db.models import ChatMessage, FormSubmission, ProjectMemory, Supplier
 from app.db.session import get_db
 from app.main import app
 

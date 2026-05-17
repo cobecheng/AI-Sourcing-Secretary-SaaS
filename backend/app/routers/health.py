@@ -2,6 +2,7 @@ from fastapi import APIRouter
 from typing import Any
 
 from app.config import get_settings
+from app.services.admin_readiness import production_hardening_warnings
 
 
 router = APIRouter(tags=["health"])
@@ -22,4 +23,5 @@ def health_check() -> dict[str, Any]:
             "firecrawl_configured": bool(settings.firecrawl_api_key),
             "litellm_configured": bool(settings.litellm_proxy_url),
         },
+        "hardening_warnings": production_hardening_warnings(settings),
     }
